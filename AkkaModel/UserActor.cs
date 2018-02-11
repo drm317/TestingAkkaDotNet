@@ -19,8 +19,12 @@ namespace AkkaModel
             {
                 _log.Info("Started playing {0}", message.TitleName);
                 CurrentlyPlaying = message.TitleName;
+                
+                _log.Info("Replying to sender");
                 Sender.Tell(new NowPlayingMessage(CurrentlyPlaying));
                 _stats.Tell(message.TitleName);
+                
+                Context.ActorSelection("/user/noexistent").Tell(message);
             });
         }
     }

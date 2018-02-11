@@ -23,9 +23,9 @@ namespace AkkaModel.Tests
         {
             TestActorRef<UserActor> actor = ActorOfAsTestActorRef<UserActor>(
                 Props.Create(() => new UserActor(ActorOf(BlackHoleActor.Props))));
-            
+
             actor.Tell(new PlayMovieMessage("Conan the Barbarian"));
-            
+
             Assert.Equal("Conan the Barbarian", actor.UnderlyingActor.CurrentlyPlaying);
         }
 
@@ -34,11 +34,11 @@ namespace AkkaModel.Tests
         {
             TestActorRef<UserActor> actor = ActorOfAsTestActorRef<UserActor>(
                 Props.Create(() => new UserActor(ActorOf(BlackHoleActor.Props))));
-            
+
             actor.Tell(new PlayMovieMessage("Conan the Barbarian"));
-            
+
             NowPlayingMessage received = ExpectMsg<NowPlayingMessage>(TimeSpan.FromSeconds(10));
-            
+
             Assert.Equal("Conan the Barbarian", received.CurrentlyPlaying);
         }
 
@@ -47,9 +47,21 @@ namespace AkkaModel.Tests
         {
             IActorRef actor = ActorOf(Props.Create(() => new UserActor(ActorOf(BlackHoleActor.Props))));
 
-            EventFilter.Info("Started playing Boolean Lies")
-                .ExpectOne(() => actor.Tell(new PlayMovieMessage("Boolean Lies")));
+            EventFilter.Info("Started playing Boolean Lies").And.Info("Replying to sender")
+                .Expect(2, () => actor.Tell(new PlayMovieMessage("Boolean Lies")));
         }
-        
+
+        [Fact]
+        public void ShouldSendToDeadLettersForUndeliveredMessage()
+        {
+            IActorRef actor = ActorOf(Props.Create(() => new UserActor(ActorOf(BlackHoleActor.Props))));
+
+            EventFilter.DeadLetter<PlayMovieMessage>(
+                    message => message.TitleName == "Boolean Lies")
+                .ExpectOne(() => actor.Tell(new PlayMovieMessage("Boolean Lies")));
+
+        }
     }
 }
+
+    
