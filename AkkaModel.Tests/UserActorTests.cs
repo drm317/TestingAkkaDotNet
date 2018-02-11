@@ -61,6 +61,28 @@ namespace AkkaModel.Tests
                 .ExpectOne(() => actor.Tell(new PlayMovieMessage("Boolean Lies")));
 
         }
+
+        [Fact]
+        public void ShouldErrorOnUnknownMovie()
+        {
+            IActorRef actor = ActorOf(Props.Create(() => new UserActor(ActorOf(BlackHoleActor.Props))));
+
+            EventFilter.Exception<NotSupportedException>()
+                .ExpectOne(() => actor.Tell(new PlayMovieMessage("Terminator")));
+        }
+
+        [Fact]
+        public void ShouldPublishPlayingMovie()
+        {
+            IActorRef actor = ActorOf(Props.Create(() => new UserActor(ActorOf(BlackHoleActor.Props))));
+
+            var subscriber = CreateTestProbe();
+            Sys.EventStream.Subscribe(subscriber, typeof(NowPlayingMessage));
+            
+            actor.Tell(new PlayMovieMessage("Terminator 2"));
+
+            subscriber.ExpectMsg<NowPlayingMessage>(message => message.CurrentlyPlaying == "Terminator 2");
+        }
     }
 }
 

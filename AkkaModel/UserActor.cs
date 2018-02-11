@@ -1,4 +1,5 @@
-﻿using Akka.Actor;
+﻿using System;
+using Akka.Actor;
 using Akka.Event;
 using Akka.IO;
 
@@ -17,6 +18,11 @@ namespace AkkaModel
             _stats = stats;
             Receive<PlayMovieMessage>(message =>
             {
+                if (message.TitleName == "Terminator")
+                {
+                    throw new NotSupportedException();
+                }
+                
                 _log.Info("Started playing {0}", message.TitleName);
                 CurrentlyPlaying = message.TitleName;
                 
@@ -25,6 +31,8 @@ namespace AkkaModel
                 _stats.Tell(message.TitleName);
                 
                 Context.ActorSelection("/user/noexistent").Tell(message);
+                
+                Context.System.EventStream.Publish(new NowPlayingMessage(CurrentlyPlaying));
             });
         }
     }
