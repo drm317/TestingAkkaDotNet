@@ -41,6 +41,15 @@ namespace AkkaModel.Tests
             
             Assert.Equal("Conan the Barbarian", received.CurrentlyPlaying);
         }
+
+        [Fact]
+        public void ShoudLogPlayMovie()
+        {
+            IActorRef actor = ActorOf(Props.Create(() => new UserActor(ActorOf(BlackHoleActor.Props))));
+
+            EventFilter.Info("Started playing Boolean Lies")
+                .ExpectOne(() => actor.Tell(new PlayMovieMessage("Boolean Lies")));
+        }
         
     }
 }
