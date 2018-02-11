@@ -83,6 +83,18 @@ namespace AkkaModel.Tests
 
             subscriber.ExpectMsg<NowPlayingMessage>(message => message.CurrentlyPlaying == "Terminator 2");
         }
+
+        [Fact]
+        public void ShouldTerminate()
+        {
+            IActorRef actor = ActorOf(Props.Create(() => new UserActor(ActorOf(BlackHoleActor.Props))));
+
+            Watch(actor);
+            
+            actor.Tell(PoisonPill.Instance);
+            
+            ExpectTerminated(actor);
+        }
     }
 }
 
