@@ -1,2 +1,3 @@
-# AkkaNetTesting
-Testing actors with Akka.Net.
+# Akka.Net Testing
+
+How to test actors in Akka.Net.
